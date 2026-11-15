@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JolDurbin (জলদূরবীন) — Coastal Bangladesh Water Access & Maternal Health Intelligence</title>
+  <meta name="description" content="Helping coastal Bangladesh find safer water, closer to home. JolDurbin combines water quality, working pump data, walking routes, and seasonal conditions across Khulna and Satkhira.">
+
+  <!-- Google Fonts: Plus Jakarta Sans, IBM Plex Mono, and Noto Sans Bengali -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            teal: {
+              DEFAULT: '#0B4F6C',
+              dark: '#083344',
+              light: '#0E6285',
+              subtle: '#E6F0F4'
+            },
+            river: {
+              DEFAULT: '#14532D',
+              deep: '#0F3F22'
+            },
+            emerald: {
+              DEFAULT: '#059669',
+              light: '#10B981',
+              pale: '#DFF7F0'
+            },
+            surface: {
+              warm: '#FDFBF7',
+              pale: '#F8FAFC',
+              card: '#FFFFFF'
+            },
+            text: {
+              main: '#102A33',
+              secondary: '#5B6B73'
+            },
+            terracotta: {
+              DEFAULT: '#C2410C',
+              light: '#FFEDD5',
+              dark: '#9A3412'
+            },
+            danger: '#DC2626'
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace'],
+            bengali: ['"Noto Sans Bengali"', 'sans-serif']
+          },
+          boxShadow: {
+            'card': '0 4px 16px -2px rgba(16, 42, 51, 0.05), 0 2px 6px -1px rgba(16, 42, 51, 0.02)',
+            'card-hover': '0 14px 28px -6px rgba(11, 79, 108, 0.10), 0 3px 8px -2px rgba(16, 42, 51, 0.04)',
+            'gis-panel': '0 8px 24px -4px rgba(8, 51, 68, 0.08), 0 2px 6px -2px rgba(16, 42, 51, 0.04)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      background-color: #FDFBF7;
+      color: #102A33;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Cartographic Grid Background */
+    .hero-mesh {
+      background: 
+        radial-gradient(circle at 85% 25%, rgba(5, 150, 105, 0.07) 0%, transparent 45%),
+        radial-gradient(circle at 15% 75%, rgba(11, 79, 108, 0.05) 0%, transparent 45%),
+        linear-gradient(to right, rgba(16, 42, 51, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(16, 42, 51, 0.02) 1px, transparent 1px),
+        #FDFBF7;
+      background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+    }
+
+    .aqua-mesh {
+      background: 
+        radial-gradient(circle at 90% 15%, rgba(223, 247, 240, 0.75) 0%, transparent 45%),
+        radial-gradient(circle at 10% 85%, rgba(14, 98, 133, 0.05) 0%, transparent 45%),
+        #F8FAFC;
+    }
+
+    /* Cards & GIS Panels with consistent transitions */
+    .gis-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(16, 42, 51, 0.08);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .gis-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -6px rgba(11, 79, 108, 0.09);
+      border-color: rgba(11, 79, 108, 0.22);
+    }
+
+    /* Animated dashed SVG routes */
+    @keyframes marchRoute {
+      to {
+        stroke-dashoffset: -40;
+      }
+    }
+
+    .animate-route {
+      animation: marchRoute 2.5s linear infinite;
+    }
+
+    /* Soft pulse */
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.18); opacity: 0; }
+      100% { transform: scale(0.95); opacity: 0; }
+    }
+
+    .pulse-ring {
+      animation: pulseRing 2.2s cubic-bezier(0.25, 0.8, 0.25, 1) infinite;
+    }
+  </style>
+</head>
+
+<body class="selection:bg-emerald-pale selection:text-teal antialiased">
+
+  <!-- ========================================================================= -->
+  <!-- 1. STICKY NAVIGATION BAR (CLEAN, UNCONGESTED, RESPONSIVE)                 -->
+  <!-- ========================================================================= -->
+  <header id="navbar" class="sticky top-0 z-50 transition-all duration-200 bg-surface-warm/95 backdrop-blur-md border-b border-text-main/10 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-18 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo & Name Group -->
+      <a href="#" class="flex items-center gap-2.5 shrink-0 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-teal to-river flex items-center justify-center text-white shadow-sm shadow-teal/20 group-hover:scale-105 transition-transform duration-200">
+          <svg class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2.5C7.5 7.5 4 12 4 15.5a8 8 0 0 0 16 0C20 12 16.5 7.5 12 2.5z"></path>
+            <path d="M9 14.5c1.5-1.5 4.5-1.5 6 0"></path>
+            <circle cx="12" cy="18" r="1.5" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-lg md:text-xl font-extrabold tracking-tight text-text-main">JolDurbin</span>
+          <span class="font-bengali text-[11px] font-semibold px-2 py-0.5 rounded-full bg-teal-subtle text-teal">জলদূরবীন</span>
+        </div>
+      </a>
+
+      <!-- Center Desktop Navigation (Clean, One-Line, No Overcrowded Badges) -->
+      <nav class="hidden xl:flex items-center gap-6 text-[14px] font-semibold text-text-secondary whitespace-nowrap">
+        <a href="#problem" class="hover:text-teal transition-colors">The Problem</a>
+        <a href="#solution" class="hover:text-teal transition-colors">Our Solution</a>
+        <a href="#features" class="hover:text-teal transition-colors">Features</a>
+        <a href="#how-it-works" class="hover:text-teal transition-colors">How It Works</a>
+        <a href="#research" class="hover:text-teal transition-colors">Datasets</a>
+      </nav>
+
+      <!-- Right Action CTA & Mobile Trigger -->
+      <div class="flex items-center gap-3 shrink-0">
+        <button onclick="openLaunchModal()" class="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm bg-gradient-to-r from-teal to-river hover:from-teal-dark hover:to-river text-white shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap group">
+          <span>Launch App</span>
+          <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+        </button>
+
+        <!-- Mobile / Tablet Menu Button -->
+        <button id="mobile-menu-btn" class="xl:hidden p-2 rounded-xl text-text-main hover:bg-black/5" aria-label="Toggle Navigation">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Dropdown Menu -->
+    <div id="mobile-menu" class="hidden xl:hidden bg-white border-b border-text-main/10 px-5 pt-3 pb-5 space-y-2.5 shadow-xl">
+      <a href="#problem" class="mobile-nav-link block text-sm font-semibold text-text-main py-2 border-b border-text-main/5">The Problem</a>
+      <a href="#solution" class="mobile-nav-link block text-sm font-semibold text-text-main py-2 border-b border-text-main/5">Our Solution</a>
+      <a href="#features" class="mobile-nav-link block text-sm font-semibold text-text-main py-2 border-b border-text-main/5">Features</a>
+      <a href="#how-it-works" class="mobile-nav-link block text-sm font-semibold text-text-main py-2 border-b border-text-main/5">How It Works</a>
+      <a href="#research" class="mobile-nav-link block text-sm font-semibold text-text-main py-2">Datasets</a>
+      <div class="pt-2">
+        <button onclick="openLaunchModal()" class="w-full py-2.5 rounded-full font-bold text-sm bg-teal text-white text-center flex items-center justify-center gap-2">
+          <span>Launch App</span>
+          <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. HERO SECTION (CLEAN, MINIMAL, CENTERED COMPOSITION)                   -->
+  <!-- ========================================================================= -->
+  <section class="relative pt-10 pb-12 md:pt-14 md:pb-16 lg:pt-16 lg:pb-18 overflow-hidden hero-mesh border-b border-text-main/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Centered Introduction (Prominent Single Headline & Minimal Hierarchy) -->
+      <div class="max-w-4xl mx-auto text-center">
+        
+        <!-- Main Promoted Hero Headline -->
+        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-extrabold text-text-main tracking-tight leading-[1.16]">
+          Water Access and Infrastructure Planning for <span class="text-teal">Coastal Bangladesh</span>
+        </h1>
+
+        <!-- Brief Supporting Description (Max 2 lines on desktop) -->
+        <p class="text-sm sm:text-base md:text-[16.5px] text-text-secondary mt-3.5 sm:mt-4 max-w-2xl mx-auto leading-relaxed">
+          Helping communities in Khulna and Satkhira compare water sources, assess walking routes, and identify areas needing water infrastructure improvements.
+        </p>
+
+        <!-- Two Action Buttons -->
+        <div class="mt-6 sm:mt-7 flex flex-wrap items-center justify-center gap-3.5">
+          <a href="#solution" class="inline-flex items-center gap-2 px-6 sm:px-7 py-3 rounded-full font-bold text-sm text-white bg-gradient-to-r from-teal to-river hover:from-teal-dark hover:to-river shadow-sm hover:shadow transition-all duration-200">
+            <span>Explore Our Solution</span>
+            <i data-lucide="arrow-down" class="w-4 h-4"></i>
+          </a>
+
+          <button onclick="openLaunchModal()" class="inline-flex items-center gap-2 px-6 sm:px-7 py-3 rounded-full font-bold text-sm text-text-main bg-white border border-text-main/15 hover:bg-black/5 shadow-sm transition-all duration-200">
+            <span>Launch App</span>
+            <i data-lucide="external-link" class="w-4 h-4 text-teal"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Preserved JolDurbin GIS Visualization (Centered, Header Bar & Coordinates Removed) -->
+      <div class="mt-8 sm:mt-10 max-w-3xl lg:max-w-4xl mx-auto">
+        <div class="rounded-2xl p-3 sm:p-4 bg-white border border-text-main/15 shadow-gis-panel">
+          
+          <!-- Compact Cartographic Simulation Viewport (Direct start, no header bar or coords) -->
+          <div class="relative rounded-xl bg-[#09221B] border border-text-main/20 overflow-hidden h-[230px] sm:h-[260px] md:h-[280px] flex items-center justify-center">
+            
+            <svg class="w-full h-full" viewBox="0 0 400 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Terrain Background -->
+              <rect width="400" height="240" fill="#0C2B22" />
+              <path d="M 0,0 L 160,0 C 175,60 145,120 170,240 L 0,240 Z" fill="#143B2E" opacity="0.9" />
+              <path d="M 230,0 C 240,70 200,130 220,240 L 400,240 L 400,0 Z" fill="#103429" opacity="0.9" />
+              
+              <!-- River Channel -->
+              <path d="M 160,0 C 175,60 145,120 170,240 L 220,240 C 200,130 240,70 230,0 Z" fill="#0B2F3D" />
+              <path d="M 195,0 C 205,65 175,125 195,240" stroke="#164E63" stroke-width="1.5" stroke-dasharray="3 3" />
+              <text x="180" y="125" fill="#38BDF8" font-size="7.5" font-family="'IBM Plex Mono', monospace" font-weight="700" letter-spacing="1.5" transform="rotate(78, 180, 125)" opacity="0.65">TIDAL RIVER (NO BRIDGE)</text>
+
+              <!-- Straight line route crossed out -->
+              <line x1="85" y1="145" x2="225" y2="140" stroke="#DC2626" stroke-width="1.8" stroke-dasharray="3 3" stroke-opacity="0.6" />
+              
+              <!-- Walkable path -->
+              <path d="M 85,145 Q 95,85 140,65 T 215,65 Q 280,75 295,110 T 325,145" 
+                    stroke="#059669" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M 85,145 Q 95,85 140,65 T 215,65 Q 280,75 295,110 T 325,145" 
+                    stroke="#A7F3D0" stroke-width="1.5" stroke-dasharray="5 5" class="animate-route" fill="none" stroke-linecap="round" />
+
+              <!-- Footbridge -->
+              <rect x="200" y="60" width="24" height="10" rx="2" fill="#0B4F6C" stroke="#38BDF8" stroke-width="1" />
+              <text x="202" y="55" fill="#E2E8F0" font-size="7" font-family="'IBM Plex Mono', monospace" font-weight="700">Dyke Bridge</text>
+
+              <!-- Origin Node -->
+              <g transform="translate(85, 145)">
+                <circle cx="0" cy="0" r="14" fill="#FDFBF7" stroke="#0B4F6C" stroke-width="2" />
+                <circle cx="0" cy="0" r="5" fill="#C2410C" />
+                <circle cx="0" cy="0" r="12" stroke="#C2410C" stroke-width="1.2" class="pulse-ring" fill="none" />
+              </g>
+              <text x="35" y="175" fill="#F8FAFC" font-size="8.5" font-weight="800">Munshiganj Village</text>
+              <text x="35" y="185" fill="#94A3B8" font-size="7" font-family="'IBM Plex Mono', monospace">Starting Point</text>
+
+              <!-- Shallow Well Node -->
+              <g transform="translate(225, 140)">
+                <circle cx="0" cy="0" r="11" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.8" />
+                <line x1="-3" y1="-3" x2="3" y2="3" stroke="#DC2626" stroke-width="1.8" />
+                <line x1="3" y1="-3" x2="-3" y2="3" stroke="#DC2626" stroke-width="1.8" />
+              </g>
+              <text x="180" y="165" fill="#FCA5A5" font-size="7.5" font-family="'IBM Plex Mono', monospace" font-weight="700">804 mg/L Na+</text>
+              <text x="180" y="174" fill="#EF4444" font-size="7" font-weight="700">High Salinity Alert</text>
+
+              <!-- Solar RO Node -->
+              <g transform="translate(325, 145)">
+                <circle cx="0" cy="0" r="14" fill="#065F46" stroke="#10B981" stroke-width="2" />
+                <circle cx="0" cy="0" r="5" fill="#34D399" />
+                <circle cx="0" cy="0" r="12" stroke="#34D399" stroke-width="1.2" class="pulse-ring" fill="none" />
+              </g>
+              <text x="270" y="175" fill="#ECFDF5" font-size="8.5" font-weight="800">Solar RO Station</text>
+              <text x="270" y="185" fill="#34D399" font-size="7.5" font-family="'IBM Plex Mono', monospace" font-weight="700">284 mg/L &bull; Safe</text>
+            </svg>
+
+            <!-- Floating GIS Badge -->
+            <div class="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-text-main/15 shadow-sm text-xs">
+              <span class="text-[9px] text-text-secondary uppercase font-mono font-bold block">Walking Path</span>
+              <span class="font-bold text-teal font-mono text-[11px]">1.4 km &bull; 17 min</span>
+            </div>
+
+            <!-- Floating Screening Badge -->
+            <div class="absolute bottom-2.5 right-2.5 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-emerald/30 shadow-sm text-xs">
+              <span class="text-[9px] text-emerald uppercase font-mono font-bold block">&lt; 300 mg/L Screening</span>
+              <span class="font-bold text-river font-mono text-[11px]">Safe Source Found</span>
+            </div>
+
+          </div>
+
+          <!-- Authentic Water Source Comparison Panel (Compact) -->
+          <div class="mt-3 p-3 rounded-xl bg-surface-pale border border-text-main/10 text-xs space-y-2">
+            <div class="font-bold text-text-main text-[11px] uppercase tracking-wider font-mono flex items-center justify-between">
+              <span>Water Source Comparison (Illustrative)</span>
+              <span class="text-[10px] text-text-secondary font-sans normal-case">Munshiganj Union &bull; Satkhira</span>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <!-- Nearest Source -->
+              <div class="p-2.5 rounded-lg bg-white border border-danger/20 text-[11.5px]">
+                <div class="flex items-center justify-between">
+                  <span class="text-danger font-bold">Nearest (Shallow Well)</span>
+                  <span class="text-danger font-mono font-bold text-[11px]">804 mg/L sodium</span>
+                </div>
+                <div class="text-text-secondary text-[10.5px] mt-0.5">Elevated salinity &bull; Shorter walk (Direct straight-line blocked by tidal canal)</div>
+              </div>
+
+              <!-- Alternative Source -->
+              <div class="p-2.5 rounded-lg bg-white border border-emerald/30 text-[11.5px]">
+                <div class="flex items-center justify-between">
+                  <span class="text-emerald font-bold">Alternative (Solar RO)</span>
+                  <span class="text-emerald font-mono font-bold text-[11px]">284 mg/L sodium</span>
+                </div>
+                <div class="text-text-secondary text-[10.5px] mt-0.5">Below 300 mg/L maternal rule &bull; 1.4 km walk (17 min via Dyke Bridge)</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 3. THE PROBLEM & RESEARCH STATISTICS (MINIMAL, CONCISE FACTS)             -->
+  <!-- ========================================================================= -->
+  <section id="problem" class="py-12 md:py-16 bg-white border-b border-text-main/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Heading (Centered, No Subtitle) -->
+      <div class="max-w-3xl mx-auto text-center mb-6 md:mb-8">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">
+          Why Finding Water Is So Difficult in Coastal Bangladesh
+        </h2>
+      </div>
+
+      <!-- 4 Concise Research Cards (Equal Width, Centered Content, No Footers) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+        
+        <!-- Card 1: Households Surveyed -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl border-t-3 border-t-teal flex flex-col justify-center h-full min-w-0 text-center">
+          <p class="text-[15px] sm:text-base font-normal text-text-main leading-relaxed">
+            <strong class="font-bold text-teal text-xl sm:text-2xl">66,234 households</strong> in coastal Khulna and Satkhira were examined for water-access conditions.
+          </p>
+        </div>
+
+        <!-- Card 2: Water Shortages -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl border-t-3 border-t-terracotta flex flex-col justify-center h-full min-w-0 text-center">
+          <p class="text-[15px] sm:text-base font-normal text-text-main leading-relaxed">
+            Coastal households lack reliable water for an average of <strong class="font-bold text-terracotta text-xl sm:text-2xl">4.65 months per year</strong>, rising to <strong class="font-bold text-terracotta text-lg sm:text-xl">7.15 months</strong> in Paikgachha.
+          </p>
+        </div>
+
+        <!-- Card 3: Water Collection Time -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl border-t-3 border-t-text-main flex flex-col justify-center h-full min-w-0 text-center">
+          <p class="text-[15px] sm:text-base font-normal text-text-main leading-relaxed">
+            Women and girls in coastal Khulna and Satkhira spend <strong class="font-bold text-text-main text-xl sm:text-2xl">1.5 to 6 hours daily</strong> collecting water.
+          </p>
+        </div>
+
+        <!-- Card 4: Maternal Health Risk -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl border-t-3 border-t-danger flex flex-col justify-center h-full min-w-0 text-center">
+          <p class="text-[15px] sm:text-base font-normal text-text-main leading-relaxed">
+            Drinking water containing more than 300 mg/L sodium is associated with a <strong class="font-bold text-danger text-xl sm:text-2xl">3.3 to 5.5 times higher risk</strong> of gestational hypertension or preeclampsia.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Secondary Information Strip (Centered & Balanced) -->
+      <div class="mt-6 p-4 sm:p-5 rounded-2xl bg-surface-pale border border-text-main/10 flex flex-col lg:flex-row items-center justify-between gap-4">
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 text-xs w-full lg:flex-1">
+          <div class="p-3 bg-white rounded-xl border border-text-main/5 text-center sm:text-left">
+            <p class="text-xs sm:text-[13px] text-text-secondary leading-snug">
+              <strong class="font-bold text-text-main">16% of households</strong> have a water source on their own premises.
+            </p>
+          </div>
+          <div class="p-3 bg-white rounded-xl border border-text-main/5 text-center sm:text-left">
+            <p class="text-xs sm:text-[13px] text-text-secondary leading-snug">
+              Some low-income families spend <strong class="font-bold text-terracotta">up to 20% of household income</strong> buying water.
+            </p>
+          </div>
+          <div class="p-3 bg-white rounded-xl border border-text-main/5 text-center sm:text-left">
+            <p class="text-xs sm:text-[13px] text-text-secondary leading-snug">
+              <strong class="font-bold text-text-main">21.6% of adults over 40</strong> in Koyra and Assasuni had moderate-to-high estimated 10-year cardiovascular or stroke risk.
+            </p>
+          </div>
+        </div>
+
+        <a href="#research" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-teal bg-white border border-teal/20 hover:bg-teal-subtle transition-all shrink-0 font-mono">
+          <span>View Research Sources</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+        </a>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 4. OUR SOLUTION SECTION (COMPACT 5-SOLUTION SYSTEM)                       -->
+  <!-- ========================================================================= -->
+  <section id="solution" class="py-12 md:py-16 bg-surface-warm border-b border-text-main/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title & Description -->
+      <div class="max-w-3xl mx-auto text-center mb-8 md:mb-10">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">
+          Our Solution
+        </h2>
+        <p class="text-text-secondary mt-2 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+          Helping coastal families find water and supporting organizations in planning better water infrastructure across Khulna and Satkhira.
+        </p>
+      </div>
+
+      <!-- 5 Solution Items (Balanced Grid) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-5">
+        
+        <!-- Solution 1 -->
+        <div class="gis-card p-5 sm:p-5.5 rounded-2xl flex flex-col justify-between lg:col-span-2">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="w-7 h-7 rounded-lg bg-teal text-white font-mono font-bold text-xs flex items-center justify-center shrink-0">01</span>
+              <h3 class="text-sm sm:text-base font-extrabold text-text-main">Find Working Water Sources</h3>
+            </div>
+            <p class="text-xs sm:text-[13.5px] text-text-secondary leading-relaxed pl-10">
+              Check which nearby wells, pumps, and water-treatment stations are reported as working or broken.
+            </p>
+          </div>
+        </div>
+
+        <!-- Solution 2 -->
+        <div class="gis-card p-5 sm:p-5.5 rounded-2xl flex flex-col justify-between lg:col-span-2">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="w-7 h-7 rounded-lg bg-teal text-white font-mono font-bold text-xs flex items-center justify-center shrink-0">02</span>
+              <h3 class="text-sm sm:text-base font-extrabold text-text-main">Check Water Quality</h3>
+            </div>
+            <p class="text-xs sm:text-[13.5px] text-text-secondary leading-relaxed pl-10">
+              Compare available sodium measurements and flag water sources above the project's 300 mg/L screening threshold.
+            </p>
+          </div>
+        </div>
+
+        <!-- Solution 3 -->
+        <div class="gis-card p-5 sm:p-5.5 rounded-2xl flex flex-col justify-between lg:col-span-2">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="w-7 h-7 rounded-lg bg-teal text-white font-mono font-bold text-xs flex items-center justify-center shrink-0">03</span>
+              <h3 class="text-sm sm:text-base font-extrabold text-text-main">Compare Walking Routes</h3>
+            </div>
+            <p class="text-xs sm:text-[13.5px] text-text-secondary leading-relaxed pl-10">
+              Find practical walking routes using roads, footpaths, and embankments instead of straight-line distances.
+            </p>
+          </div>
+        </div>
+
+        <!-- Solution 4 -->
+        <div class="gis-card p-5 sm:p-5.5 rounded-2xl flex flex-col justify-between md:col-span-1 lg:col-span-3">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="w-7 h-7 rounded-lg bg-teal text-white font-mono font-bold text-xs flex items-center justify-center shrink-0">04</span>
+              <h3 class="text-sm sm:text-base font-extrabold text-text-main">Account for Weather and Pump Failures</h3>
+            </div>
+            <p class="text-xs sm:text-[13.5px] text-text-secondary leading-relaxed pl-10">
+              Estimate how heavy rain, seasonal shortages, and broken pumps can increase walking and waiting times.
+            </p>
+          </div>
+        </div>
+
+        <!-- Solution 5: Investment Planning -->
+        <div class="gis-card p-5 sm:p-5.5 rounded-2xl flex flex-col justify-between md:col-span-1 lg:col-span-3 border-teal/25 bg-gradient-to-br from-white to-teal-subtle/30">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="w-7 h-7 rounded-lg bg-teal text-white font-mono font-bold text-xs flex items-center justify-center shrink-0">05</span>
+              <h3 class="text-sm sm:text-base font-extrabold text-text-main">Plan Water Infrastructure Investments</h3>
+            </div>
+            <p class="text-xs sm:text-[13.5px] text-text-secondary leading-relaxed pl-10">
+              Identify coastal communities with limited water access and estimate how many residents could benefit from new or repaired facilities.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Frontline Health Worker & NGO Community Access Strip -->
+      <div class="mt-6 max-w-3xl mx-auto p-3.5 sm:p-4 rounded-xl bg-teal-subtle/50 border border-teal/20 text-center text-xs text-text-main flex items-center justify-center gap-2.5">
+        <i data-lucide="users" class="w-4 h-4 text-teal shrink-0"></i>
+        <p class="text-xs sm:text-[13px] text-text-secondary leading-snug">
+          Community health workers and NGOs can use the platform to support residents without smartphones or reliable internet access.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 5. KEY FEATURES SECTION (COMPACT OVERVIEW)                                -->
+  <!-- ========================================================================= -->
+  <section id="features" class="py-12 md:py-16 bg-surface-warm border-b border-text-main/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title (Centered, Direct) -->
+      <div class="max-w-3xl mx-auto text-center mb-8 md:mb-10">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">
+          Key Features
+        </h2>
+      </div>
+
+      <!-- Feature 1: Water Infrastructure Investment Planning -->
+      <div class="gis-card p-5 sm:p-6 rounded-2xl border border-teal/30 bg-gradient-to-br from-white via-surface-pale to-teal-subtle/20 mb-4 sm:mb-5">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-8 h-8 rounded-lg bg-teal text-white flex items-center justify-center shrink-0">
+            <i data-lucide="compass" class="w-4.5 h-4.5"></i>
+          </div>
+          <h3 class="text-base sm:text-lg font-extrabold text-text-main">
+            Water Infrastructure Investment Planning
+          </h3>
+        </div>
+        <p class="text-sm sm:text-[15px] text-text-secondary leading-relaxed pl-11">
+          Identify coastal communities with limited water access and estimate how many residents could benefit from new or repaired water facilities.
+        </p>
+      </div>
+
+      <!-- Features 2–5 in 2-Column Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+
+        <!-- Feature 2: Water Quality Screening -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-emerald-pale text-river flex items-center justify-center shrink-0">
+              <i data-lucide="shield-check" class="w-4.5 h-4.5 text-emerald"></i>
+            </div>
+            <h3 class="text-base sm:text-lg font-extrabold text-text-main">Water Quality Screening</h3>
+          </div>
+          <p class="text-sm sm:text-[15px] text-text-secondary leading-relaxed pl-11">
+            Compare available sodium measurements to identify water sources with elevated salt levels or missing quality information.
+          </p>
+        </div>
+
+        <!-- Feature 3: Water Sources and Walking Routes -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-teal-subtle text-teal flex items-center justify-center shrink-0">
+              <i data-lucide="map-pin" class="w-4.5 h-4.5 text-teal"></i>
+            </div>
+            <h3 class="text-base sm:text-lg font-extrabold text-text-main">Water Sources and Walking Routes</h3>
+          </div>
+          <p class="text-sm sm:text-[15px] text-text-secondary leading-relaxed pl-11">
+            Find reported working water facilities and compare practical walking distances and estimated travel times.
+          </p>
+        </div>
+
+        <!-- Feature 4: Pump Failure and Waiting-Time Simulation -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-800 flex items-center justify-center shrink-0">
+              <i data-lucide="hourglass" class="w-4.5 h-4.5 text-amber-700"></i>
+            </div>
+            <h3 class="text-base sm:text-lg font-extrabold text-text-main">Pump Failure and Waiting-Time Simulation</h3>
+          </div>
+          <p class="text-sm sm:text-[15px] text-text-secondary leading-relaxed pl-11">
+            Estimate how broken pumps can increase walking distances and waiting times at nearby water stations.
+          </p>
+        </div>
+
+        <!-- Feature 5: Weather and Seasonal Conditions -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+              <i data-lucide="cloud-rain" class="w-4.5 h-4.5 text-blue-600"></i>
+            </div>
+            <h3 class="text-base sm:text-lg font-extrabold text-text-main">Weather and Seasonal Conditions</h3>
+          </div>
+          <p class="text-sm sm:text-[15px] text-text-secondary leading-relaxed pl-11">
+            Compare how heavy rainfall and seasonal water shortages affect water availability and estimated walking times.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 6. HOW IT WORKS (STREAMLINED 4-STEP WORKFLOW)                             -->
+  <!-- ========================================================================= -->
+  <section id="how-it-works" class="py-12 md:py-16 bg-white border-b border-text-main/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title (Centered, Direct) -->
+      <div class="max-w-3xl mx-auto text-center mb-6 md:mb-8">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">
+          How It Works
+        </h2>
+      </div>
+
+      <!-- 4 Step Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        
+        <!-- Step 1 -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl flex flex-col justify-start h-full">
+          <div class="mb-3">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono font-bold uppercase tracking-wider bg-teal/10 text-teal border border-teal/20">
+              STEP 1
+            </span>
+          </div>
+          <h3 class="text-base sm:text-[17px] font-extrabold text-text-main mb-2">Choose Your Location</h3>
+          <p class="text-xs sm:text-[13.5px] text-text-secondary leading-relaxed">
+            Select your village or starting point on the map in coastal Khulna or Satkhira.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl flex flex-col justify-start h-full">
+          <div class="mb-3">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono font-bold uppercase tracking-wider bg-teal/10 text-teal border border-teal/20">
+              STEP 2
+            </span>
+          </div>
+          <h3 class="text-base sm:text-[17px] font-extrabold text-text-main mb-2">Find Nearby Water Sources</h3>
+          <p class="text-xs sm:text-[13.5px] text-text-secondary leading-relaxed">
+            Find nearby wells, filters, and treatment stations and check their reported working status.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl flex flex-col justify-start h-full">
+          <div class="mb-3">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono font-bold uppercase tracking-wider bg-teal/10 text-teal border border-teal/20">
+              STEP 3
+            </span>
+          </div>
+          <h3 class="text-base sm:text-[17px] font-extrabold text-text-main mb-2">Check Water Quality and Routes</h3>
+          <p class="text-xs sm:text-[13.5px] text-text-secondary leading-relaxed">
+            Compare available sodium measurements and estimate walking routes using mapped paths and roads.
+          </p>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="gis-card p-5 sm:p-6 rounded-2xl flex flex-col justify-start h-full border-emerald/20">
+          <div class="mb-3">
+            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono font-bold uppercase tracking-wider bg-emerald-pale text-river border border-emerald/25">
+              STEP 4
+            </span>
+          </div>
+          <h3 class="text-base sm:text-[17px] font-extrabold text-text-main mb-2">Compare Your Options</h3>
+          <p class="text-xs sm:text-[13.5px] text-text-secondary leading-relaxed">
+            Compare water quality, walking distances, travel times, and estimated waiting times before choosing a source.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 6. DATASETS                                                               -->
+  <!-- ========================================================================= -->
+  <section id="research" class="py-12 md:py-16 bg-white border-b border-text-main/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Title & Centered Subtitle -->
+      <div class="max-w-2xl mx-auto text-center mb-8 md:mb-10">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">
+          Datasets
+        </h2>
+        <p class="text-text-secondary mt-2 text-xs sm:text-sm leading-relaxed">
+          Public datasets used to map water sources, assess water quality, and estimate access conditions in coastal Bangladesh.
+        </p>
+      </div>
+
+      <!-- 6 Clickable Dataset Cards (Official Source Logos Grid) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        
+        <!-- Dataset 1: Water Point Data Exchange (WPDx) -->
+        <a href="https://data.humdata.org/dataset/wpdx_bgd" target="_blank" rel="noopener noreferrer" class="gis-card p-5 sm:p-6 rounded-2xl block group bg-white hover:border-teal/50 hover:shadow-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal">
+          <div class="flex items-center justify-between gap-3 mb-5">
+            <div class="h-12 sm:h-14 flex items-center justify-start max-w-[170px]">
+              <img src="assets/logos/wpdx.png" alt="Water Point Data Exchange (WPDx) official logo" class="h-9 sm:h-10 w-auto max-w-[160px] object-contain object-left group-hover:scale-[1.02] transition-transform duration-200" loading="lazy">
+            </div>
+            <i data-lucide="external-link" class="w-4 h-4 text-text-secondary/50 group-hover:text-teal group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0"></i>
+          </div>
+          <h3 class="text-base font-extrabold text-text-main group-hover:text-teal transition-colors leading-snug">Water Point Data Exchange (WPDx)</h3>
+          <p class="text-xs sm:text-[13px] text-text-secondary mt-1.5 leading-normal">18,873+ mapped water points</p>
+        </a>
+
+        <!-- Dataset 2: British Geological Survey (BGS) -->
+        <a href="https://www.bgs.ac.uk/groundwater/download/dphe-bgs-national-hydrochemical-survey/" target="_blank" rel="noopener noreferrer" class="gis-card p-5 sm:p-6 rounded-2xl block group bg-white hover:border-teal/50 hover:shadow-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal">
+          <div class="flex items-center justify-between gap-3 mb-5">
+            <div class="h-12 sm:h-14 flex items-center justify-start max-w-[170px]">
+              <img src="assets/logos/bgs.png" alt="British Geological Survey (BGS) official logo" class="h-9 sm:h-10 w-auto max-w-[160px] object-contain object-left group-hover:scale-[1.02] transition-transform duration-200" loading="lazy">
+            </div>
+            <i data-lucide="external-link" class="w-4 h-4 text-text-secondary/50 group-hover:text-teal group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0"></i>
+          </div>
+          <h3 class="text-base font-extrabold text-text-main group-hover:text-teal transition-colors leading-snug">British Geological Survey (BGS)</h3>
+          <p class="text-xs sm:text-[13px] text-text-secondary mt-1.5 leading-normal">Groundwater chemistry records</p>
+        </a>
+
+        <!-- Dataset 3: UNICEF Bangladesh -->
+        <a href="https://www.unicef.org/bangladesh/en/media/12191/file/MICS%20Preliminary%20findings%202025.pdf.pdf" target="_blank" rel="noopener noreferrer" class="gis-card p-5 sm:p-6 rounded-2xl block group bg-white hover:border-teal/50 hover:shadow-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal">
+          <div class="flex items-center justify-between gap-3 mb-5">
+            <div class="h-12 sm:h-14 flex items-center justify-start max-w-[170px]">
+              <img src="assets/logos/unicef.svg" alt="UNICEF official logo" class="h-8 sm:h-9 w-auto max-w-[160px] object-contain object-left group-hover:scale-[1.02] transition-transform duration-200" loading="lazy">
+            </div>
+            <i data-lucide="external-link" class="w-4 h-4 text-text-secondary/50 group-hover:text-teal group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0"></i>
+          </div>
+          <h3 class="text-base font-extrabold text-text-main group-hover:text-teal transition-colors leading-snug">UNICEF Bangladesh</h3>
+          <p class="text-xs sm:text-[13px] text-text-secondary mt-1.5 leading-normal">Household water and health observations</p>
+        </a>
+
+        <!-- Dataset 4: Zenodo -->
+        <a href="https://zenodo.org/records/14560019" target="_blank" rel="noopener noreferrer" class="gis-card p-5 sm:p-6 rounded-2xl block group bg-white hover:border-teal/50 hover:shadow-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal">
+          <div class="flex items-center justify-between gap-3 mb-5">
+            <div class="h-12 sm:h-14 flex items-center justify-start max-w-[170px]">
+              <img src="assets/logos/zenodo.svg" alt="Zenodo official logo" class="h-8 sm:h-9 w-auto max-w-[160px] object-contain object-left group-hover:scale-[1.02] transition-transform duration-200" loading="lazy">
+            </div>
+            <i data-lucide="external-link" class="w-4 h-4 text-text-secondary/50 group-hover:text-teal group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0"></i>
+          </div>
+          <h3 class="text-base font-extrabold text-text-main group-hover:text-teal transition-colors leading-snug">Zenodo</h3>
+          <p class="text-xs sm:text-[13px] text-text-secondary mt-1.5 leading-normal">Coastal salinity mapping</p>
+        </a>
+
+        <!-- Dataset 5: World Bank -->
+        <a href="https://climateknowledgeportal.worldbank.org/country/bangladesh/climate-data-historical" target="_blank" rel="noopener noreferrer" class="gis-card p-5 sm:p-6 rounded-2xl block group bg-white hover:border-teal/50 hover:shadow-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal">
+          <div class="flex items-center justify-between gap-3 mb-5">
+            <div class="h-12 sm:h-14 flex items-center justify-start max-w-[170px]">
+              <img src="assets/logos/worldbank.svg" alt="World Bank Group official logo" class="h-8 sm:h-9 w-auto max-w-[170px] object-contain object-left group-hover:scale-[1.02] transition-transform duration-200" loading="lazy">
+            </div>
+            <i data-lucide="external-link" class="w-4 h-4 text-text-secondary/50 group-hover:text-teal group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0"></i>
+          </div>
+          <h3 class="text-base font-extrabold text-text-main group-hover:text-teal transition-colors leading-snug">World Bank Group</h3>
+          <p class="text-xs sm:text-[13px] text-text-secondary mt-1.5 leading-normal">Historical climate and dry-season data</p>
+        </a>
+
+        <!-- Dataset 6: Geofabrik / OpenStreetMap -->
+        <a href="https://download.geofabrik.de/asia/bangladesh.html" target="_blank" rel="noopener noreferrer" class="gis-card p-5 sm:p-6 rounded-2xl block group bg-white hover:border-teal/50 hover:shadow-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal">
+          <div class="flex items-center justify-between gap-3 mb-5">
+            <div class="h-12 sm:h-14 flex items-center justify-start max-w-[170px]">
+              <img src="assets/logos/openstreetmap.svg" alt="OpenStreetMap official logo" class="h-9 sm:h-10 w-auto object-contain object-left group-hover:scale-[1.02] transition-transform duration-200" loading="lazy">
+            </div>
+            <i data-lucide="external-link" class="w-4 h-4 text-text-secondary/50 group-hover:text-teal group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0"></i>
+          </div>
+          <h3 class="text-base font-extrabold text-text-main group-hover:text-teal transition-colors leading-snug">Geofabrik / OpenStreetMap</h3>
+          <p class="text-xs sm:text-[13px] text-text-secondary mt-1.5 leading-normal">Roads, paths, rivers, and embankments</p>
+        </a>
+
+      </div>
+
+    </div>
+  </section>
+
+  
+  <!-- ========================================================================= -->
+  <!-- 7. WATER INFRASTRUCTURE INVESTMENT IN COASTAL BANGLADESH                  -->
+  <!-- ========================================================================= -->
+  <section class="py-12 md:py-14 bg-surface-warm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Simplified Centered Section Heading -->
+      <div class="max-w-3xl mx-auto text-center mb-6 md:mb-7">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-text-main tracking-tight">
+          Water Infrastructure Investment in Coastal Bangladesh
+        </h2>
+      </div>
+
+      <!-- Compact Infrastructure Impact Card -->
+      <div class="max-w-4xl mx-auto gis-card p-6 sm:p-8 rounded-2xl bg-white border border-text-main/10 shadow-sm">
+        
+        <!-- Initiative Heading & Short Description -->
+        <div>
+          <h3 class="text-lg sm:text-xl font-extrabold text-text-main">
+            Xylem Watermark &amp; Americares
+          </h3>
+          <p class="text-sm sm:text-[15px] text-text-secondary mt-1.5 leading-relaxed">
+            Xylem Watermark and Americares supported improvements to water, sanitation, and hygiene facilities in coastal Bangladesh.
+          </p>
+        </div>
+
+        <!-- Two Main Impact Statistics -->
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+          
+          <!-- Statistic 1 -->
+          <div class="p-5 sm:p-6 rounded-xl bg-surface-pale border border-text-main/5 flex flex-col justify-between">
+            <div>
+              <div class="text-3xl sm:text-4xl font-extrabold font-mono text-teal">174</div>
+              <div class="text-sm sm:text-base font-bold text-text-main mt-1">Healthcare Facilities</div>
+            </div>
+            <p class="text-xs sm:text-[13px] text-text-secondary mt-2 leading-relaxed">
+              Supported through water, sanitation, and hygiene improvements.
+            </p>
+          </div>
+
+          <!-- Statistic 2 -->
+          <div class="p-5 sm:p-6 rounded-xl bg-surface-pale border border-text-main/5 flex flex-col justify-between">
+            <div>
+              <div class="text-3xl sm:text-4xl font-extrabold font-mono text-river">2.4 Million</div>
+              <div class="text-sm sm:text-base font-bold text-text-main mt-1">People Reached Annually</div>
+            </div>
+            <p class="text-xs sm:text-[13px] text-text-secondary mt-2 leading-relaxed">
+              Reported patients and healthcare workers benefiting annually.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Compact Bottom Row: Attribution & Project Source Link -->
+        <div class="mt-6 pt-4 border-t border-text-main/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-[13px]">
+          <p class="text-text-secondary italic">
+            External Xylem&ndash;Americares initiative, not a JolDurbin project.
+          </p>
+          <a href="https://wateractionhub.org/projects/2325/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 font-bold font-mono text-teal hover:underline shrink-0 group">
+            <span>View Project Source</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- 8. COMPACT FOOTER                                                         -->
+  <!-- ========================================================================= -->
+  <footer class="bg-teal-dark text-slate-400 py-9 md:py-11 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="flex flex-col md:flex-row items-center justify-between gap-5 pb-6 md:pb-7 border-b border-white/10">
+        
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-teal flex items-center justify-center text-white font-bold shadow-sm">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2.5C7.5 7.5 4 12 4 15.5a8 8 0 0 0 16 0C20 12 16.5 7.5 12 2.5z"></path></svg>
+          </div>
+          <div>
+            <span class="text-sm font-bold text-white">JolDurbin (জলদূরবীন)</span>
+            <span class="block text-[10.5px] text-slate-400 font-mono">Coastal Water Intelligence &bull; Khulna &amp; Satkhira</span>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-slate-300 font-medium text-[13px]">
+          <a href="#problem" class="hover:text-white transition-colors">The Problem</a>
+          <a href="#solution" class="hover:text-white transition-colors">Our Solution</a>
+          <a href="#features" class="hover:text-white transition-colors">Features</a>
+          <a href="#how-it-works" class="hover:text-white transition-colors">How It Works</a>
+          <a href="#research" class="hover:text-white transition-colors">Datasets</a>
+          <button onclick="openLaunchModal()" class="hover:text-emerald-light transition-colors font-bold font-mono">App Portal</button>
+        </div>
+
+      </div>
+
+      <div class="pt-5 md:pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10.5px] text-slate-400 font-mono text-center sm:text-left">
+        <p>Grounded in open data from WPDx, DPHE-BGS, UNICEF, Zenodo, World Bank, and OpenStreetMap.</p>
+        <p>&copy; 2026 JolDurbin Initiative. Dedicated to safe coastal water access.</p>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- 14. LAUNCH APP CONFIGURABLE MODAL                                         -->
+  <!-- ========================================================================= -->
+  <div id="launch-modal" class="fixed inset-0 z-50 bg-teal-dark/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-7 shadow-2xl border border-text-main/15 relative">
+      
+      <!-- Close Button -->
+      <button onclick="closeLaunchModal()" class="absolute top-4 right-4 text-text-secondary hover:text-text-main p-1.5 rounded-full hover:bg-black/5 transition-all">
+        <i data-lucide="x" class="w-4.5 h-4.5"></i>
+      </button>
+
+      <div class="w-10 h-10 rounded-xl bg-teal-subtle text-teal flex items-center justify-center mb-3">
+        <i data-lucide="external-link" class="w-5 h-5"></i>
+      </div>
+
+      <h3 class="text-lg font-extrabold text-text-main">JolDurbin Routing Application</h3>
+      <p class="text-xs text-text-secondary mt-1 leading-relaxed">
+        This public-facing landing page connects to our separate GIS routing dashboard once deployment is active.
+      </p>
+
+      <!-- App URL Box -->
+      <div class="mt-4 p-3.5 rounded-xl bg-surface-pale border border-text-main/10">
+        <div class="flex items-center justify-between text-[10.5px] font-bold font-mono text-text-secondary uppercase tracking-wider mb-1.5">
+          <span>Application Status</span>
+          <span class="px-2 py-0.5 rounded font-mono bg-amber-100 text-amber-800 text-[10px]">Ready to Link</span>
+        </div>
+        
+        <div class="relative">
+          <input type="text" id="app-url-input" value="https://joldurbin-app.vercel.app" class="w-full px-3 py-2 text-xs font-mono rounded-lg border border-text-main/15 bg-white text-text-main focus:outline-none focus:ring-2 focus:ring-teal">
+        </div>
+        
+        <div class="mt-2.5">
+          <button onclick="launchConfiguredApp()" class="w-full py-2 rounded-lg font-bold text-xs bg-teal hover:bg-teal-dark text-white shadow transition-all font-mono">
+            Open Configured App
+          </button>
+        </div>
+
+        <p class="text-[9.5px] text-text-secondary mt-2">
+          💡 You can customize this target URL anytime by setting <code class="font-mono text-teal">NEXT_PUBLIC_JOLDURBIN_APP_URL</code> or passing your live deployment URL.
+        </p>
+      </div>
+
+      <div class="mt-4 flex justify-end">
+        <button onclick="closeLaunchModal()" class="px-4 py-1.5 rounded-lg text-xs font-bold text-text-secondary hover:text-text-main hover:bg-black/5 transition-all">
+          Close Window
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 15. JAVASCRIPT LOGIC & SCENARIO INTERACTIVITY                             -->
+  <!-- ========================================================================= -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Configurable Application URL
+    window.JOLDURBIN_APP_URL = "https://joldurbin-app.vercel.app";
+
+    function openLaunchModal() {
+      const modal = document.getElementById('launch-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeLaunchModal() {
+      const modal = document.getElementById('launch-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function launchConfiguredApp() {
+      const url = document.getElementById('app-url-input').value || window.JOLDURBIN_APP_URL;
+      window.open(url, '_blank');
+    }
+
+    // Close modal on click outside
+    document.getElementById('launch-modal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeLaunchModal();
+      }
+    });
+
+    // Mobile Navigation Toggle
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    document.querySelectorAll('.mobile-nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+      });
+    });
+
+      </script>
+
+</body>
+</html>
