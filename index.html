@@ -164,10 +164,10 @@
 
       <!-- Right Action CTA & Mobile Trigger -->
       <div class="flex items-center gap-3 shrink-0">
-        <button onclick="openLaunchModal()" class="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm bg-gradient-to-r from-teal to-river hover:from-teal-dark hover:to-river text-white shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap group">
+        <a href="https://jal-durbin.vercel.app/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm bg-gradient-to-r from-teal to-river hover:from-teal-dark hover:to-river text-white shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap group">
           <span>Launch App</span>
           <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
-        </button>
+        </a>
 
         <!-- Mobile / Tablet Menu Button -->
         <button id="mobile-menu-btn" class="xl:hidden p-2 rounded-xl text-text-main hover:bg-black/5" aria-label="Toggle Navigation">
@@ -185,10 +185,10 @@
       <a href="#how-it-works" class="mobile-nav-link block text-sm font-semibold text-text-main py-2 border-b border-text-main/5">How It Works</a>
       <a href="#research" class="mobile-nav-link block text-sm font-semibold text-text-main py-2">Datasets</a>
       <div class="pt-2">
-        <button onclick="openLaunchModal()" class="w-full py-2.5 rounded-full font-bold text-sm bg-teal text-white text-center flex items-center justify-center gap-2">
+        <a href="https://jal-durbin.vercel.app/" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 rounded-full font-bold text-sm bg-teal text-white text-center flex items-center justify-center gap-2">
           <span>Launch App</span>
           <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
-        </button>
+        </a>
       </div>
     </div>
   </header>
@@ -219,10 +219,10 @@
             <i data-lucide="arrow-down" class="w-4 h-4"></i>
           </a>
 
-          <button onclick="openLaunchModal()" class="inline-flex items-center gap-2 px-6 sm:px-7 py-3 rounded-full font-bold text-sm text-text-main bg-white border border-text-main/15 hover:bg-black/5 shadow-sm transition-all duration-200">
+          <a href="https://jal-durbin.vercel.app/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 sm:px-7 py-3 rounded-full font-bold text-sm text-text-main bg-white border border-text-main/15 hover:bg-black/5 shadow-sm transition-all duration-200">
             <span>Launch App</span>
             <i data-lucide="external-link" class="w-4 h-4 text-teal"></i>
-          </button>
+          </a>
         </div>
 
       </div>
@@ -859,7 +859,7 @@
           <a href="#features" class="hover:text-white transition-colors">Features</a>
           <a href="#how-it-works" class="hover:text-white transition-colors">How It Works</a>
           <a href="#research" class="hover:text-white transition-colors">Datasets</a>
-          <button onclick="openLaunchModal()" class="hover:text-emerald-light transition-colors font-bold font-mono">App Portal</button>
+          <a href="https://jal-durbin.vercel.app/" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-light transition-colors font-bold font-mono">App Portal</a>
         </div>
 
       </div>
@@ -896,11 +896,11 @@
       <div class="mt-4 p-3.5 rounded-xl bg-surface-pale border border-text-main/10">
         <div class="flex items-center justify-between text-[10.5px] font-bold font-mono text-text-secondary uppercase tracking-wider mb-1.5">
           <span>Application Status</span>
-          <span class="px-2 py-0.5 rounded font-mono bg-amber-100 text-amber-800 text-[10px]">Ready to Link</span>
+          <span class="px-2 py-0.5 rounded font-mono bg-emerald-pale text-teal text-[10px]">Live on Vercel</span>
         </div>
         
         <div class="relative">
-          <input type="text" id="app-url-input" value="https://jaldurbin-app.vercel.app" class="w-full px-3 py-2 text-xs font-mono rounded-lg border border-text-main/15 bg-white text-text-main focus:outline-none focus:ring-2 focus:ring-teal">
+          <input type="text" id="app-url-input" value="https://jal-durbin.vercel.app/" class="w-full px-3 py-2 text-xs font-mono rounded-lg border border-text-main/15 bg-white text-text-main focus:outline-none focus:ring-2 focus:ring-teal">
         </div>
         
         <div class="mt-2.5">
@@ -931,7 +931,7 @@
     lucide.createIcons();
 
     // Configurable Application URL
-    window.JALDURBIN_APP_URL = "https://jaldurbin-app.vercel.app";
+    window.JALDURBIN_APP_URL = "https://jal-durbin.vercel.app/";
 
     function openLaunchModal() {
       const modal = document.getElementById('launch-modal');
