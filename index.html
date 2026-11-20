@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JolDurbin (জলদূরবীন) — Coastal Bangladesh Water Access & Maternal Health Intelligence</title>
-  <meta name="description" content="Helping coastal Bangladesh find safer water, closer to home. JolDurbin combines water quality, working pump data, walking routes, and seasonal conditions across Khulna and Satkhira.">
+  <title>JalDurbin (জলদূরবীন) — Coastal Bangladesh Water Access & Maternal Health Intelligence</title>
+  <meta name="description" content="Helping coastal Bangladesh find safer water, closer to home. JalDurbin combines water quality, working pump data, walking routes, and seasonal conditions across Khulna and Satkhira.">
 
   <!-- Google Fonts: Plus Jakarta Sans, IBM Plex Mono, and Noto Sans Bengali -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -148,7 +148,7 @@
           </svg>
         </div>
         <div class="flex items-baseline gap-2">
-          <span class="text-lg md:text-xl font-extrabold tracking-tight text-text-main">JolDurbin</span>
+          <span class="text-lg md:text-xl font-extrabold tracking-tight text-text-main">JalDurbin</span>
           <span class="font-bengali text-[11px] font-semibold px-2 py-0.5 rounded-full bg-teal-subtle text-teal">জলদূরবীন</span>
         </div>
       </a>
@@ -227,7 +227,7 @@
 
       </div>
 
-      <!-- Preserved JolDurbin GIS Visualization (Centered, Header Bar & Coordinates Removed) -->
+      <!-- Preserved JalDurbin GIS Visualization (Centered, Header Bar & Coordinates Removed) -->
       <div class="mt-8 sm:mt-10 max-w-3xl lg:max-w-4xl mx-auto">
         <div class="rounded-2xl p-3 sm:p-4 bg-white border border-text-main/15 shadow-gis-panel">
           
@@ -822,7 +822,7 @@
         <!-- Compact Bottom Row: Attribution & Project Source Link -->
         <div class="mt-6 pt-4 border-t border-text-main/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-[13px]">
           <p class="text-text-secondary italic">
-            External Xylem&ndash;Americares initiative, not a JolDurbin project.
+            External Xylem&ndash;Americares initiative, not a JalDurbin project.
           </p>
           <a href="https://wateractionhub.org/projects/2325/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 font-bold font-mono text-teal hover:underline shrink-0 group">
             <span>View Project Source</span>
@@ -848,7 +848,7 @@
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2.5C7.5 7.5 4 12 4 15.5a8 8 0 0 0 16 0C20 12 16.5 7.5 12 2.5z"></path></svg>
           </div>
           <div>
-            <span class="text-sm font-bold text-white">JolDurbin (জলদূরবীন)</span>
+            <span class="text-sm font-bold text-white">JalDurbin (জলদূরবীন)</span>
             <span class="block text-[10.5px] text-slate-400 font-mono">Coastal Water Intelligence &bull; Khulna &amp; Satkhira</span>
           </div>
         </div>
@@ -866,7 +866,7 @@
 
       <div class="pt-5 md:pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10.5px] text-slate-400 font-mono text-center sm:text-left">
         <p>Grounded in open data from WPDx, DPHE-BGS, UNICEF, Zenodo, World Bank, and OpenStreetMap.</p>
-        <p>&copy; 2026 JolDurbin Initiative. Dedicated to safe coastal water access.</p>
+        <p>&copy; 2026 JalDurbin Initiative. Dedicated to safe coastal water access.</p>
       </div>
 
     </div>
@@ -887,7 +887,7 @@
         <i data-lucide="external-link" class="w-5 h-5"></i>
       </div>
 
-      <h3 class="text-lg font-extrabold text-text-main">JolDurbin Routing Application</h3>
+      <h3 class="text-lg font-extrabold text-text-main">JalDurbin Routing Application</h3>
       <p class="text-xs text-text-secondary mt-1 leading-relaxed">
         This public-facing landing page connects to our separate GIS routing dashboard once deployment is active.
       </p>
@@ -900,7 +900,7 @@
         </div>
         
         <div class="relative">
-          <input type="text" id="app-url-input" value="https://joldurbin-app.vercel.app" class="w-full px-3 py-2 text-xs font-mono rounded-lg border border-text-main/15 bg-white text-text-main focus:outline-none focus:ring-2 focus:ring-teal">
+          <input type="text" id="app-url-input" value="https://jaldurbin-app.vercel.app" class="w-full px-3 py-2 text-xs font-mono rounded-lg border border-text-main/15 bg-white text-text-main focus:outline-none focus:ring-2 focus:ring-teal">
         </div>
         
         <div class="mt-2.5">
@@ -910,7 +910,7 @@
         </div>
 
         <p class="text-[9.5px] text-text-secondary mt-2">
-          💡 You can customize this target URL anytime by setting <code class="font-mono text-teal">NEXT_PUBLIC_JOLDURBIN_APP_URL</code> or passing your live deployment URL.
+          💡 You can customize this target URL anytime by setting <code class="font-mono text-teal">NEXT_PUBLIC_JALDURBIN_APP_URL</code> or passing your live deployment URL.
         </p>
       </div>
 
@@ -931,7 +931,7 @@
     lucide.createIcons();
 
     // Configurable Application URL
-    window.JOLDURBIN_APP_URL = "https://joldurbin-app.vercel.app";
+    window.JALDURBIN_APP_URL = "https://jaldurbin-app.vercel.app";
 
     function openLaunchModal() {
       const modal = document.getElementById('launch-modal');
@@ -946,7 +946,7 @@
     }
 
     function launchConfiguredApp() {
-      const url = document.getElementById('app-url-input').value || window.JOLDURBIN_APP_URL;
+      const url = document.getElementById('app-url-input').value || window.JALDURBIN_APP_URL;
       window.open(url, '_blank');
     }
 

@@ -248,7 +248,7 @@ export const WEATHER_DEGRADATION_RULES = {
 };
 
 /**
- * Standard GIS Analysis Radius configured in the actual JolDurbin application.
+ * Standard GIS Analysis Radius configured in the actual JalDurbin application.
  * Strictly 100 meters (200 m diameter) for localized infrastructure, salinity, and dwelling cluster triage.
  */
 export const ANALYSIS_RADIUS_METERS = 100;

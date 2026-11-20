@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// JolDurbin Local Dev Server
+// JalDurbin Local Dev Server
 // Run: node serve.js
 // URL: http://localhost:3000
 
@@ -66,7 +66,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🌊 JolDurbin Dev Server running at:`);
+  console.log(`\n🌊 JalDurbin Dev Server running at:`);
   console.log(`   http://localhost:${PORT}`);
   console.log(`   http://127.0.0.1:${PORT}\n`);
   console.log('Press Ctrl+C to stop.\n');
